@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Matrix</title>
+
+      <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.js" integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA=" crossorigin="anonymous">
+      </script>
+  </head>
+
+  <body>
+    <script>
+      $(document).ready(function() {
+        var gridStructure = [
+          ["USDEUR", "USDJPY", "USDGBP", "USDAUD", "USDCHF", "USDCAD", "USDHKD", "USDSEK", "USDNZD", "USDKRW", "USDSGD", "USDNOK", "USDMXN", "USDINR"],
+          ["EURJPY", "EURGBP", "EURAUD", "EURCHF", "EURCAD", "EURHKD", "EURSEK", "EURNZD", "EURKRW", "EURSGD", "EURNOK", "EURMXN", "EURINR"],
+          ["JPYGBP", "JPYAUD", "JPYCHF", "JPYCAD", "JPYHKD", "JPYSEK", "JPYNZD", "JPYKRW", "JPYSGD", "JPYNOK", "JPYMXN", "JPYINR"],
+          ["GBPAUD", "GBPCHF", "GBPCAD", "GBPHKD", "GBPSEK", "GBPNZD", "GBPKRW", "GBPSGD", "GBPNOK", "GBPMXN", "GBPINR"],
+          ["AUDCHF", "AUDCAD", "AUDHKD", "AUDSEK", "AUDNZD", "AUDKRW", "AUDSGD", "AUDNOK", "AUDMXN", "AUDINR"],
+          ["CHFCAD", "CHFHKD", "CHFSEK", "CHFNZD", "CHFKRW", "CHFSGD", "CHFNOK", "CHFMXN", "CHFINR"],
+          ["CADHKD", "CADSEK", "CADNZD", "CADKRW", "CADSGD", "CADNOK", "CADMXN", "CADINR"],
+          ["HKDSEK", "HKDNZD", "HKDKRW", "HKDSGD", "HKDNOK", "HKDMXN", "HKDINR"],
+          ["SEKNZD", "SEKKRW", "SEKSGD", "SEKNOK", "SEKMXN", "SEKINR"],
+          ["NZDKRW", "NZDSGD", "NZDNOK", "NZDMXN", "NZDINR"],
+          ["KRWSGD", "KRWNOK", "KRWMXN", "KRWINR"],
+          ["SGDNOK", "SGDMXN", "SGDINR"],
+          ["NOKMXN", "NOKINR"],
+          ["MXNINR"]
+        ];
+
+        var xyDimensions = gridStructure.length,
+          W = Math.floor($(window).width() / xyDimensions) * xyDimensions,
+          w = W / xyDimensions,
+          H = Math.floor($(window).height() / xyDimensions) * xyDimensions,
+          h = H / xyDimensions;
+        var centerpiece = $('<div />', {
+          class: "centerpiece",
+          width: W,
+          height: H
+        });
+        $('body')
+          .append(centerpiece);
+
+        var newTile = {
+          specs: function(params) {
+            var id = params.id,
+              width = params.width - 1,
+              height = params.height - 1,
+              ratio = params.ratio,
+              colorscheme = params.colorscheme,
+              headerText = params.headerText,
+              bodyText = params.bodyText,
+              bodyTextColor = params.bodyTextColor//(gridReturns == 'blank') ? '#ccc' : params.bodyTextColor
+              shiftRight = params.shiftRight,
+              shiftDown = params.shiftDown;
+            var tile = $('<div />', {
+              class: 'tile',
+              width: width,
+              height: height,
+            });
+            var tileHeader = $('<div />', {
+                class: 'tile Header',
+                width: width,
+                height: height * ratio,
+              })
+              .css({
+                background: colorscheme[0],
+                'font-size': height * ratio / 2
+              })
+              .html(headerText);
+            var tileBody = $('<div />', {
+                class: 'tile Body',
+                id: id,
+                width: width,
+                height: height * (1 - ratio),
+              })
+              .css({
+                background: colorscheme[1],
+                color: bodyTextColor,
+                'font-size': height * (1 - ratio) / 2
+              })
+              .html(bodyText);
+            tile
+              .append(tileHeader)
+              .append(tileBody)
+              .css('transform', 'translate(' + shiftRight + 'px,' + shiftDown + 'px)');
+            centerpiece.append(tile);
+          }
+        };
+
+        for (var row = 0; row < xyDimensions; row++) {
+          var setLength = gridStructure[row].length;
+          for (var col = 0; col < setLength; col++) {
+            var item = gridStructure[col][row];
+            newTile
+              .specs({
+                id: item,
+                width: w,
+                height: h,
+                ratio: .35,
+                colorscheme: ["white", "white"],
+                headerText: item,
+                bodyText: null,
+                bodyTextColor: 'black',// gridReturns[col][row] > 0 ? 'green' : 'red',
+                shiftRight: col * w,
+                shiftDown: row * h
+              });
+          }
+        };
+        
+        var src = new EventSource('/stream');
+        src.onmessage = function(e) {
+		  var priceData = JSON.parse(e.data.split('\n')[0]);
+		  var returnsData = JSON.parse(e.data.split('\n')[1]);
+		  for (var r = 0; r < xyDimensions; r++) {
+            var setL = gridStructure[r].length;
+              for (var c = 0; c < setL; c++ ) {
+                var color = returnsData[r][c];
+                $("div#"+ gridStructure[r][c] +"")
+                  .text(priceData[r][c])
+                  .css('color', color);
+              }
+            }		
+          if ( e.data == 'CLOSE' ) src.close()
+        };       
+
+      })
+
+    </script>
+  </body>
+  <style>
+    @import url('https://fonts.googleapis.com/css?family=Catamaran|Montserrat');
+    html,
+    body,
+    .centerpiece {
+      height: 100%;
+      font-family: 'Montserrat', sans-serif;
+      color: #ccc;
+      background: lightgray;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    div.tile {
+      position: absolute;
+      background: lightgray;
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    div.tile.Header {
+      top: 0;
+    }
+    
+    div.tile.Body {
+      bottom: 0;
+    }
+
+  </style>
+
+</html>
+
+
+
+

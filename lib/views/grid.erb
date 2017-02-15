@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Matrix</title>
+    <%= include_gon(:init => true) %>
+      <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.js" integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA=" crossorigin="anonymous">
+
+
+      </script>
+  </head>
+
+  <body>
+    <script>
+      $(document).ready(function() {
+        var gridStructure = [
+            ["USDEUR", "USDJPY", "USDGBP", "USDAUD", "USDCHF", "USDCAD", "USDHKD", "USDSEK", "USDNZD", "USDKRW", "USDSGD", "USDNOK", "USDMXN", "USDINR"],
+            ["EURJPY", "EURGBP", "EURAUD", "EURCHF", "EURCAD", "EURHKD", "EURSEK", "EURNZD", "EURKRW", "EURSGD", "EURNOK", "EURMXN", "EURINR"],
+            ["JPYGBP", "JPYAUD", "JPYCHF", "JPYCAD", "JPYHKD", "JPYSEK", "JPYNZD", "JPYKRW", "JPYSGD", "JPYNOK", "JPYMXN", "JPYINR"],
+            ["GBPAUD", "GBPCHF", "GBPCAD", "GBPHKD", "GBPSEK", "GBPNZD", "GBPKRW", "GBPSGD", "GBPNOK", "GBPMXN", "GBPINR"],
+            ["AUDCHF", "AUDCAD", "AUDHKD", "AUDSEK", "AUDNZD", "AUDKRW", "AUDSGD", "AUDNOK", "AUDMXN", "AUDINR"],
+            ["CHFCAD", "CHFHKD", "CHFSEK", "CHFNZD", "CHFKRW", "CHFSGD", "CHFNOK", "CHFMXN", "CHFINR"],
+            ["CADHKD", "CADSEK", "CADNZD", "CADKRW", "CADSGD", "CADNOK", "CADMXN", "CADINR"],
+            ["HKDSEK", "HKDNZD", "HKDKRW", "HKDSGD", "HKDNOK", "HKDMXN", "HKDINR"],
+            ["SEKNZD", "SEKKRW", "SEKSGD", "SEKNOK", "SEKMXN", "SEKINR"],
+            ["NZDKRW", "NZDSGD", "NZDNOK", "NZDMXN", "NZDINR"],
+            ["KRWSGD", "KRWNOK", "KRWMXN", "KRWINR"],
+            ["SGDNOK", "SGDMXN", "SGDINR"],
+            ["NOKMXN", "NOKINR"],
+            ["MXNINR"]
+          ],
+          gridPrices = gon.data,
+          gridReturns = [
+            [true, false, false, false, true, false, true, true, false, true, false, false, true, false],
+            [false, false, true, false, false, true, false, false, false, false, true, false, false],
+            [false, false, false, false, false, false, false, false, false, false, false, false],
+            [false, true, false, false, true, false, false, false, true, false, false],
+            [false, false, false, false, false, false, false, false, false, false],
+            [false, false, true, false, false, true, false, false, false],
+            [false, true, false, false, false, false, false, false],
+            [false, false, false, false, false, false, false],
+            [false, false, false, false, true, false],
+            [false, true, true, false, false],
+            [false, false, false, false],
+            [false, false, false],
+            [false, false],
+            [true]
+          ],
+          xyDimensions = gridStructure.length,
+          W = Math.floor($(window).width() * .75 / xyDimensions) * xyDimensions,
+          w = W / xyDimensions,
+          H = Math.floor($(window).height() * .75 / xyDimensions) * xyDimensions,
+          h = H / xyDimensions;
+
+        var centerpiece = $('<div />', {
+          class: "centerpiece",
+          width: W,
+          height: H
+        });
+        $('body').append(centerpiece);
+
+        var attachGridDiv = function(params) {
+          var id = params.id,
+            width = params.width - 1, //-1 to account for border
+            height = params.height - 1,
+            text = params.text,
+            color = params.color == null ? '#ccc' : (params.color == true ? 'green' : 'red');
+          var gridDiv = $('<div />', { //the individual grid/tiles
+            class: 'grid',
+            id: id,
+            width: width,
+            height: height,
+          }).append(text).css({
+            color: color
+          });
+          $(centerpiece).append(gridDiv);
+          this.shift = function(n) {
+            var moveRight = n.horizontally,
+              moveDown = n.vertically;
+            $(gridDiv).css('transform', 'translate(' + moveRight + 'px,' + moveDown + 'px)')
+          };
+          this.layerFeatures = function(options) {
+            var pair = options.pair,
+              scale = options.scale;
+            var textBox = $('<div />', {
+              class: 'strip',
+              width: width,
+              height: height * (scale * 2)
+            }).css({
+              'font-size': '' + (width * scale) + 'px'
+            }).html(pair);
+
+            $(gridDiv).append(textBox);
+            //$(gridDiv).append//.css('background','yellow')Append doesn't simply append tags, it actually appends elements. In your case you want to append list items to an unordered list that gets appended to your div.
+          };
+        };
+        $.each(gridStructure, function(row, value) {
+          for (var col = row; col < xyDimensions; col++) {
+            var tile = new attachGridDiv({
+              id: value[col],
+              width: w,
+              height: h,
+              text: (gridPrices[row][col - row]).toFixed(4), //<---------HERE
+              color: (gridReturns[row][col - row])
+            });
+            tile.shift({
+              horizontally: col * w,
+              vertically: row * h
+            });
+            tile.layerFeatures({
+              pair: value[col - row],
+              scale: 1 / 7
+            });
+          }
+        });
+        var src = new EventSource('/bottles');
+        src.onmessage = function(e) {
+          console.log(e)
+          alert(e.data)
+          $('#bottles-output').append("\n" + e.data)
+          if ( e.data == 'CLOSE' ) src.close()
+        };
+        
+      });
+    </script>
+  </body>
+  <style>
+    @import url('https://fonts.googleapis.com/css?family=Catamaran|Montserrat');
+    html,
+    body,
+    .centerpiece {
+      height: 100%;
+      font-family: 'Montserrat', sans-serif;
+      color: #666; //#ccc;
+    }
+    
+    .centerpiece {
+      border: solid #666;
+      border-width: 1px 1px 0 0;
+      position: absolute;
+      top: 2.5%;
+      right: 2.5%;
+      //transform: translateX(-50%) translateY(-50%);
+    }
+    
+    div.grid {
+      border: solid #666;
+      font-weight: bold;
+      position: absolute;
+      background: transparent;
+      border-width: 0 0 1px 1px;
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    div.strip {
+      position: absolute;
+      top: 0;
+      color: #ccc;
+      //  background: black;
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      flex-direction: column;
+      text-align: center;
+    }
+
+  </style>
+
+</html>
+
+
+

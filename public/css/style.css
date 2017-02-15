@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css?family=Catamaran|Montserrat');
+html,
+body,
+.centerpiece {
+  height: 100%;
+  font-family: 'Montserrat', sans-serif;
+  color: #666; //#ccc;
+}
+
+.centerpiece {
+  border: solid #666;
+  border-width: 1px 1px 0 0;
+  position: absolute;
+  top: 2.5%;
+  right: 2.5%;
+  //transform: translateX(-50%) translateY(-50%);
+}
+
+div.grid {
+  border: solid #666;
+  font-weight: bold;
+  position: absolute;
+  background: transparent;
+  border-width: 0 0 1px 1px;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+div.strip {
+  position: absolute;
+  top: 0;
+  color: #ccc;
+  //  background: black;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  text-align: center;
+}
