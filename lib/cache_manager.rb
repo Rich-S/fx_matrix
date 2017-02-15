@@ -1,7 +1,7 @@
 class CacheManager
 
-      uri = URI.parse(ENV["REDISCLOUD_URL"])
-   $redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+   #uri = URI.parse(ENV["REDISCLOUD_URL"])
+   #$redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
 
    def self.store(data)
       $redis.set(Date.today.to_s, check_redis << data)

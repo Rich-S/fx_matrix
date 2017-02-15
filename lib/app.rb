@@ -8,6 +8,11 @@ class FXMatrix < Sinatra::Base
   
   scheduler = Rufus::Scheduler.new
 
+  configure do
+    uri = URI.parse(ENV["REDISCLOUD_URL"])
+    $redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+  end
+
   helpers do
     def calc_returns(a,b) #a is the earlier set of the two
       array = []
