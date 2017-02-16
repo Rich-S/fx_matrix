@@ -35,7 +35,7 @@ class FXMatrix < Sinatra::Base
   get '/stream' do
     content_type 'text/event-stream'
     stream(:keep_open) do |out|
-      scheduler.every '30s' do
+      scheduler.every '30s', :first_in => 0.5 do
         live_data = FX::Grid.new.price_data
         returns_data = calc_returns(CacheManager.lookback(1)||live_data,live_data)
         CacheManager.store live_data
