@@ -48,7 +48,8 @@ class FXMatrix < Sinatra::Base
   end
   
   post '/' do
-    scheduler.stop
+    scheduler.shutdown(:kill)
+    $redis.quit
   end
 
 end
