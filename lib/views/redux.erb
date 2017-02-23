@@ -2,8 +2,7 @@
 <html>
 
   <head>
-    <title>Matrix</title>
-
+    <title>Live FX Prices</title>
       <script type="text/javascript" src="https://code.jquery.com/jquery-3.1.1.js" integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA=" crossorigin="anonymous">
       </script>
   </head>
@@ -121,11 +120,20 @@
                   .css('color', color);
               }
             }		
-          if ( e.data == 'CLOSE' ) src.close()
+          window.onbeforeunload = function () {
+    		src.close();
+    		$.ajax({
+      		  url: "/",
+      		  data: {},
+      		  type: "post"
+    		});
+    	  };
         };       
 
       })
-
+//window.onbeforeunload = function () {
+//    return "Do you really want to close?";
+//};
     </script>
   </body>
   <style>

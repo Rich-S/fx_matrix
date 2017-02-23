@@ -5,7 +5,6 @@ require 'fx_matrix'
 class FXMatrix < Sinatra::Base
 
   set :root, File.dirname(__FILE__)
-  
   scheduler = Rufus::Scheduler.new
 
   configure do
@@ -23,7 +22,7 @@ class FXMatrix < Sinatra::Base
           }
       end
       return array
-    end
+    end        
   end
 
   get '/' do
@@ -42,9 +41,14 @@ class FXMatrix < Sinatra::Base
         out << "data: #{live_data}\n"
         out << "data: #{returns_data}\n"
         out << "data: CLOSE\n\n"
+        puts "sent"
       end
       out.callback { conns.delete(out) }
     end
+  end
+  
+  post '/' do
+    scheduler.stop
   end
 
 end
